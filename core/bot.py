@@ -23,7 +23,7 @@ def start_handler(ctx: MessageContext, num_player=2):
 
 
 class MessageContext(Message):
-    """当次消息会话上下文"""
+    """每次消息会话上下文，继承消息类多了消息api类调用实例，封装回复消息行为"""
 
     def __init__(self, message: Message, msg_api: MessageAPI):
         super().__init__(message.__dict__)
@@ -33,7 +33,7 @@ class MessageContext(Message):
         send = MessageSendResponse(resp, self.id)
         return self.msg_api.post_message(self.channel_id, send)
     
-    def reply_embed(self, send: MessageSendResponse):
+    def reply_send(self, send: MessageSendResponse):
         send.msg_id = self.id
         return self.msg_api.post_message(self.channel_id, send)
 

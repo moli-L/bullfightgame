@@ -248,13 +248,11 @@ class BullGame:
     def get_remain_seats(self):
         return self.num_player - len(self.players)
 
-    def get_round_announcement(self): #每回合要做的第一件事
+    def get_round_announcement(self): 
+        #每回合要做的第一件事
         banker = self.get_banker()
         self.status = GameStatus.WAITING_BET.value
         return f"第 {self.banker+1} 回合，庄 [{banker.user_name}]，请其他玩家投入（计时1min，可重复投入）"
-
-    async def run_timeout(self, sec):
-        ...
 
     def find_player_by_id(self, user_id):
         for p in self.players:
@@ -270,3 +268,5 @@ class BullGame:
     def is_game_end(self):
         return self.banker == self.num_player
 
+    def current_round(self):
+        return self.banker + 1
