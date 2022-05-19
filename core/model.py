@@ -25,29 +25,13 @@ class Member:
             self.__dict__ = data
 
 
-class MessageEmbedThumbnail:
-    def __init__(self, url: str = "", data=None):
-        # 图片地址
-        self.url = url
-        if data is not None:
-            self.__dict__ = data
-
-
-class MessageEmbedField:
-    def __init__(self, data=None, name: str = None, value: str = None):
-        self.name = name
-        self.value = value
-        if data:
-            self.__dict__ = data
-
-
 class MessageEmbed:
     def __init__(
         self,
         title: str = "",
         prompt: str = "",
-        thumbnail: MessageEmbedThumbnail = MessageEmbedThumbnail(),
-        fields: List[MessageEmbedField] = [MessageEmbedField()],
+        thumbnail = None,
+        fields = None,
         data=None,
     ):
         # 标题

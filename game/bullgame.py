@@ -6,10 +6,12 @@ from typing import List
 
 
 class Player:
-    def __init__(self, user_id, user_name, defult_points=100):
+    def __init__(self, user_id, user_name, avater, default_points=100):
         self.user_id = user_id
         self.user_name = user_name
-        self.points = defult_points
+        self.avater = avater
+        self.default_points = default_points
+        self.points = default_points
         self.chips = 1  #下注
         self.bet = False
         self.cards = []
@@ -82,7 +84,7 @@ card_value = {
 
 class BullResult:
     def __init__(self):
-        self.level = 0      #等级：默认0=无牛 options: (无牛，牛X，牛牛，大牛牛)
+        self.level = 0      #等级：默认0=无牛 options: (无牛，牛X，牛牛，五花牛牛)
         self.max = 1        #最大牌型, 或牛X的X
         self.times = 1      #计算积分时的倍数
 
@@ -148,6 +150,7 @@ class GameStatus(Enum):
     WAITING_JOIN = 0
     WAITING_BET = 1
     GAMING = 2
+
 
 class BullGame:
     def __init__(self, channel_id, num_player=2):

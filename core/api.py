@@ -4,7 +4,7 @@ import json
 
 from core.http import Http
 from core.url import get_url, APIConstant
-from core.model import MessageSendResponse, Message, User
+from core.model import MessageEmbed, MessageSendResponse, Message, User
 
 
 class BaseAPI:
@@ -73,6 +73,8 @@ class MessageAPI(BaseAPI):
         url = get_url(APIConstant.messagesURI).format(channel_id=channel_id)
         request_json = {}
         request_json.update(message_send.__dict__)
+        if isinstance(request_json['embed'], MessageEmbed):
+            request_json['embed'] = request_json['embed'].__dict__
         response = self.http.post(url, request_json)
         return json.loads(response.content, object_hook=Message)
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from threading import Timer
-from bullgame import BullGame, Player
+from .bullgame import BullGame, Player
 
 
 MIN_NUM_PLAYERS = 2
@@ -26,7 +26,7 @@ class GameManager:
         return channel_id in self.game_room
 
     def get_room(self, channel_id) -> BullGame:
-        return self.game_room[channel_id]
+        return self.game_room.get(channel_id)
     
     def find_player(self, channel_id, user_id) -> Player:
         return self.get_room(channel_id).find_player_by_id(user_id)

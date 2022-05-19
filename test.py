@@ -1,8 +1,8 @@
 
-from bullgame import CowGame, Player
+from bullgame import BullGame, Player
 
 
-game = CowGame(3)
+game = BullGame(3)
 p1 = Player("张三")
 p2 = Player("李四")
 p3 = Player("郭正山")
