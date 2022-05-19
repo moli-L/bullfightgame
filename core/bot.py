@@ -15,8 +15,7 @@ bot = Bot()
 
 @bot.command("开始游戏")
 def start_handler(ctx: MessageContext, num_player=2):
-    send = MessageSendRequest(f"已创建{num_player}人房间，等待玩家进入", ctx.id)
-    ctx.reply(send)
+    ctx.reply(f"已创建{num_player}人房间，等待玩家进入")
 
 # 对应指令：/开始游戏 or /开始游戏 2
 """

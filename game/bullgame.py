@@ -6,7 +6,7 @@ from typing import List
 
 
 class Player:
-    def __init__(self, user_id, user_name, avater, default_points=100):
+    def __init__(self, user_id, user_name, avater="", default_points=100):
         self.user_id = user_id
         self.user_name = user_name
         self.avater = avater
@@ -153,7 +153,7 @@ class GameStatus(Enum):
 
 
 class BullGame:
-    def __init__(self, channel_id, num_player=2):
+    def __init__(self, channel_id=None, num_player=2):
         self.channel_id = channel_id  # 每个频道同时只能一场游戏
         self.num_player = num_player
         self.players: List[Player] = []
