@@ -30,7 +30,7 @@ def introduce_handler(ctx: MessageContext):
 
 @bot.command("游戏指令")
 def show_command_handler(ctx: MessageContext):
-    resp = f", ".join(['/'+c for c in bot.handlers.keys()])
+    resp = f", ".join([bot.command_prefix+c for c in bot.handlers.keys()])
     logger.info("游戏指令：", resp)
     ctx.reply(resp)
 

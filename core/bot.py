@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import re
 
 from core.model import Message, MessageSendResponse
 from core.ws_client import Client
@@ -17,7 +18,7 @@ bot = Bot()
 def start_handler(ctx: MessageContext, num_player=2):
     ctx.reply(f"已创建{num_player}人房间，等待玩家进入")
 
-# 对应指令：/开始游戏 or /开始游戏 2
+# 对应指令：开始游戏 or 开始游戏 2
 """
 
 
@@ -57,13 +58,20 @@ def _parse_params(params):
     return [parse_number(p) for p in params]
 
 
+def _parse_AT_content(content: str) -> str:
+    return re.sub(r"<@![0-9]*?>", '', content).strip()
+
 def dispatch_command(message, token=None):
+    content = _parse_AT_content(message['content'])
+    logger.debug("Message content: " + content)
     bot = Bot()  #单例实例
-    if not message['content'].startswith(bot.command_prefix): #指令事件过滤
+    if not content.startswith(bot.command_prefix): #指令事件过滤
         return
     message: Message = json.loads(json.dumps(message), object_hook=Message)
+    message.content = content
     sp = message.content.split()
-    command, params = sp[0][1:], _parse_params(sp[1:])
+    command, params = sp[0], _parse_params(sp[1:])
+    command = command.replace(bot.command_prefix, '', 1)
     logger.info(f"command: {command}, params: {params}")
     ctx = MessageContext(message, bot.msg_api or MessageAPI(token))
     bot.exec_handler(command, ctx, *params)
@@ -75,7 +83,7 @@ def handle_invalid_command(ctx: MessageContext, cmd):
 
 class Bot:
     _inst = False # 单例
-    command_prefix = "/"
+    command_prefix = ""
 
     def __init__(self, command_prefix=None):
         if command_prefix is not None:

@@ -17,7 +17,13 @@ logger = get_logger()
 4. 处理事件（消息事件）
 """
 
-# 只注册监听消息事件
+
+""" 监听@消息事件 """
+INTENT_PUBLIC_GUILD_MESSAGES = 1 << 30  # // 消息事件，此为公域的消息事件
+#   - AT_MESSAGE_CREATE                   // 当收到@机器人的消息，或者回复机器人消息时
+#   - PUBLIC_MESSAGE_DELETE               // 当频道的消息被删除时
+
+""" 监听所有消息事件 """
 INTENT_GUILD_MESSAGES = 1 << 9    # // 消息事件，仅 *私域* 机器人能够设置此 intents。
 #   - MESSAGE_CREATE                // 发送消息事件，代表频道内的全部消息，而不只是 at 机器人的消息。内容与 AT_MESSAGE_CREATE 相同
 #   - MESSAGE_DELETE                // 删除（撤回）消息事件
@@ -121,7 +127,7 @@ class Client:
             "op": OpCode.WS_IDENTITY.value,
             "d": {
                 "token": self.token,
-                "intents": INTENT_GUILD_MESSAGES,
+                "intents": INTENT_PUBLIC_GUILD_MESSAGES,
                 "shard": []
             }
         }
