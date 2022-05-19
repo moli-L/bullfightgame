@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from threading import Timer
-from time import time
 from bullgame import BullGame, Player
 
 
