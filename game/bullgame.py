@@ -98,6 +98,7 @@ class Poker:
         random.shuffle(self.cards)
     
     def deal_cards(self, num_player):
+        self.shuffle_cards()
         res = []
         r = num_player * 5
         for i in range(num_player):
