@@ -52,7 +52,7 @@ class OpCode(Enum):
 
 
 class Client:
-    def __init__(self, token, url, callback):
+    def __init__(self, token, url, dispatcher):
         self.token = token
         self.ws_url = url
         self.ws_conn = None
@@ -60,7 +60,7 @@ class Client:
         self.heartbeat_thread = None
         self.event_seq = None  # 事件序列号，发送消息需要携带，第一次连接传null
         self.ws_app = None
-        self.callback = callback
+        self.dispatcher = dispatcher
 
     def connect(self):
         """
@@ -92,7 +92,7 @@ class Client:
                     logger.info("[ws连接]程序启动成功！")
                     return
 
-                self.callback(message_event['d'])  # dispatch message
+                self.dispatcher(message_event['d'])  # dispatch message
 
                 
         def on_error(ws, exception=Exception):

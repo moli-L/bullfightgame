@@ -2,6 +2,8 @@
 
 import json
 import re
+from threading import Thread
+from multiprocessing import Queue
 
 from core.model import Message, MessageSendResponse
 from core.ws_client import Client
@@ -61,24 +63,46 @@ def _parse_params(params):
 def _parse_AT_content(content: str) -> str:
     return re.sub(r"<@![0-9]*?>", '', content).strip()
 
-def dispatch_command(message, token=None):
-    content = _parse_AT_content(message['content'])
-    logger.debug("Message content: " + content)
-    bot = Bot()  #单例实例
-    if not content.startswith(bot.command_prefix): #指令事件过滤
-        return
-    message: Message = json.loads(json.dumps(message), object_hook=Message)
-    message.content = content
-    sp = message.content.split()
-    command, params = sp[0], _parse_params(sp[1:])
-    command = command.replace(bot.command_prefix, '', 1)
-    logger.info(f"command: {command}, params: {params}")
-    ctx = MessageContext(message, bot.msg_api or MessageAPI(token))
-    bot.exec_handler(command, ctx, *params)
 
+class Handler:
+    """事件处理器"""
 
-def handle_invalid_command(ctx: MessageContext, cmd):
-    ctx.reply(f"无效指令[{cmd}]")
+    def __init__(self):
+        # 指令事件分派器与处理器通过消息队列传送message
+        self.q_msg = Queue()
+
+    # dispatcher过滤非指令消息，发送指令事件
+    def dispatcher(self, message):
+        content = _parse_AT_content(message['content'])
+        message['content'] = content
+        logger.debug("Message content: " + content)
+        bot = Bot() #单例
+        if not content.startswith(bot.command_prefix): #指令事件过滤
+            return
+        self.q_msg.put(message)
+        
+    # handler使用子线程异步处理指令事件
+    def handler(self):
+        while True:
+            try:
+                message = self.q_msg.get()
+                logger.debug(f"handler recv msg")
+            except:
+                ...
+            message: Message = json.loads(json.dumps(message), object_hook=Message)
+            bot = Bot() #单例
+            sp = message.content.split()
+            command, params = sp[0], _parse_params(sp[1:])
+            command = command.replace(bot.command_prefix, '', 1)
+            logger.info(f"command: {command}, params: {params}")
+            ctx = MessageContext(message, bot.msg_api)
+            bot.exec_handler(command, ctx, *params)
+    
+    def start(self):
+        # 事件处理线程启动
+        logger.info("[事件处理器]事件处理后台线程启动...")
+        thread = Thread(target=self.handler, daemon=True)
+        thread.start()
 
 
 class Bot:
@@ -92,7 +116,7 @@ class Bot:
     def __new__(cls, *args, **kw):
         if not cls._inst:
             cls._inst = object.__new__(cls)
-            cls.handlers = {}
+            cls.handle_func = {}
             cls.msg_api = None
         return cls._inst
 
@@ -101,27 +125,32 @@ class Bot:
         指令回调注册装饰器：cmd=指令
         """
         def decorate(func):
-            assert cmd not in self.handlers, f"指令{cmd}注册了多个处理函数"
-            self.handlers[cmd] = func
+            assert cmd not in self.handle_func, f"指令{cmd}注册了多个处理函数"
+            self.handle_func[cmd] = func
             def wrapper(*args, **kw):
                 func(*args, **kw)
             return wrapper
         return decorate
     
     def exec_handler(self, cmd, ctx, *args, **kw):
-        if cmd in self.handlers:
-            self.handlers[cmd](ctx, *args, **kw)
+        if cmd in self.handle_func:
+            self.handle_func[cmd](ctx, *args, **kw)
         else:
-            handle_invalid_command(ctx, cmd)
+            # 处理无效指令
+            ctx.reply(f"无效指令[{cmd}]")
         
     def run(self, token):
-        logger.info("程序启动...")
+        logger.info("[Bot]程序启动...")
         # 通过api获取websocket链接
         ws_api = WebsocketAPI(token)
         ws_ap = ws_api.ws()
-        # 新建和注册监听事件
-        ws_client = Client(token, ws_ap['url'], dispatch_command)
+        # 事件处理器
+        handler = Handler()
+        handler.start()
+        # 消息回复类
         self.msg_api = MessageAPI(token)
+        # 监听机器人事件ws客户端
+        ws_client = Client(token, ws_ap['url'], handler.dispatcher)
         try:
             logger.info("[ws连接]开始ws连接")
             ws_client.connect()
